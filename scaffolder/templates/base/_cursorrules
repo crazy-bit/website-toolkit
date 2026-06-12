@@ -1,0 +1,12 @@
+# Cursor / AI 助手规则
+
+本项目的完整 AI 协作规范见根目录 `AGENTS.md`，请严格遵守。
+
+核心要点（详见 AGENTS.md）：
+- 技术栈固定：Nuxt 3 + Nuxt UI 3 + Tailwind + GSAP + Lenis + Iconify + TypeScript，不要替换或新增同类库。
+- 新页面放 pages/（文件名即路由）；可复用 UI 放 components/；逻辑放 composables/。
+- 所有请求走 composables/useApi.ts；禁止组件内直接 fetch。
+- 日志用 useLogger('模块名')，禁止裸 console.log。
+- 图标用 Iconify <UIcon>；动画用 useGsap()；滚动用 useLenis()。
+- 全 TypeScript，类型集中 types/。
+- 改完代码运行 npm run check，红灯必须修复，不要绕过测试。

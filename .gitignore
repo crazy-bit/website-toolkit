@@ -1,0 +1,29 @@
+# 参考实现（不纳入本工具仓库）
+maoxianjia/
+
+# 临时 / 冒烟测试生成目录
+_smoke_*/
+_tmp*/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node（脚手架生成项目若就地初始化时）
+node_modules/
+.nuxt/
+.output/
+dist/
+
+# 日志 / 测试产物
+*.log
+coverage/
+test-results/
+playwright-report/
+
+# 编辑器 / 系统
+.DS_Store
+.idea/
+*.local

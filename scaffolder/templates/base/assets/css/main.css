@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/* 全局样式与设计变量统一写在这里。
+   业务组件优先使用 Tailwind 工具类，避免散落的裸 CSS。 */
+
+:root {
+  --app-max-width: 1280px;
+}
+
+html {
+  scroll-behavior: auto; /* 平滑滚动交给 Lenis */
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
