@@ -46,3 +46,24 @@ test.describe('路由冒烟', () => {
     })
   }
 })
+
+/*
+ * 单页模式（仅 pages/index.vue + 视图状态切换）补充冒烟：
+ * 上面的路由遍历只会测到 '/'，无法覆盖内部视图。若你的项目是单页模式
+ * （把视图同步到 URL，如 #view=xxx 或 ?view=xxx），请把视图列表填到 VIEWS
+ * 并启用下面的测试，逐个视图断言"无报错、非白屏"。
+ *
+ * const VIEWS = ['overview', 'calendar', 'detail', 'stats']
+ * test.describe('单页视图冒烟', () => {
+ *   for (const view of VIEWS) {
+ *     test(`视图 ${view} 正常`, async ({ page }) => {
+ *       const errors: string[] = []
+ *       page.on('pageerror', e => errors.push(String(e)))
+ *       page.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
+ *       await page.goto(`/#view=${view}`, { waitUntil: 'networkidle' })
+ *       await expect(page.locator('body')).toBeVisible()
+ *       expect(errors, `${view} 报错：\n${errors.join('\n')}`).toHaveLength(0)
+ *     })
+ *   }
+ * })
+ */

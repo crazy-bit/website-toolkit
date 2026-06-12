@@ -21,9 +21,16 @@
 | 可复用 UI | `components/`（自动导入，无需 import） |
 | 逻辑 / 状态 / 计算 | `composables/`（`useXxx.ts`，自动导入） |
 | 所有后端请求 | `composables/useApi.ts`（唯一出入口） |
+| 纯函数 / 常量 / mock 数据 | `utils/`（自动导入，无副作用、可被单测） |
 | 类型定义 | `types/index.ts` |
 | 全局样式 | `assets/css/main.css` |
 | 服务端接口 | `server/api/`（需要后端时） |
+
+### 页面组织模式（二选一，不要混用）
+
+- **多页模式（默认）**：每个视图一个 `pages/xxx.vue`，文件名即路由。绝大多数站点用这种。
+- **单页模式**：仅 `pages/index.vue`，内部用状态切换视图（适合单一大屏 / 仪表盘）。
+  此时视图组件放 `components/View*.vue`，切换状态放 composable，并可同步到 URL（query/hash）以便分享与冒烟测试。
 
 ## 三、必须遵守
 
@@ -44,6 +51,9 @@
 
 - ❌ 引入新的 UI 库 / 动画库 / 图标方案
 - ❌ 在组件里直接 `fetch`（必须经 `useApi.ts`）
+- ❌ 在组件里另写一个与 `useApi.ts` 同名 / 同功能的请求函数（杜绝同一能力两份实现）
+- ❌ 空 catch 吞掉错误（`catch {}`）。捕获后至少要 `log.error(...)` 或给用户提示
+- ❌ 写了 composable / 函数却从不调用的死代码（如定义 `useLenis` 却不在 `app.vue` 调用）
 - ❌ 裸用 `console.log`（必须用 `useLogger`）
 - ❌ 新建 `.js` 业务文件（用 `.ts`）
 - ❌ 手写路由表（用约定式 `pages/`）
