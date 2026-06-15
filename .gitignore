@@ -4,6 +4,10 @@ maoxianjia/
 # 临时 / 冒烟测试生成目录
 _smoke_*/
 _tmp*/
+_vt/
+
+# 本地试跑生成的示例站点（含 node_modules，不纳入仓库）
+scaffolder/my-site/
 
 # Python
 __pycache__/

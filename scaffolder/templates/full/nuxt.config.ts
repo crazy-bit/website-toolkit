@@ -5,6 +5,9 @@ export default defineNuxtConfig({
   // 调试能力：开发工具默认开启
   devtools: { enabled: true },
 
+  // 关闭 Nuxt 匿名遥测，避免安装/首次运行时出现"是否参与"的交互询问
+  telemetry: false,
+
   modules: [
     '@nuxt/ui',
     // full 级别：接入官方 ESLint 模块，配合根目录 eslint.config.mjs 做机器兜底
@@ -12,11 +15,6 @@ export default defineNuxtConfig({
   ],
 
   css: ['~/assets/css/main.css'],
-
-  ui: {
-    // 图标统一走 Iconify（Lucide + MDI）
-    icons: ['lucide', 'mdi'],
-  },
 
   app: {
     head: {

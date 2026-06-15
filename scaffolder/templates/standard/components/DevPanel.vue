@@ -5,6 +5,9 @@
  */
 import { getLogBuffer, clearLogBuffer, type LogEntry } from '~/composables/useLogger'
 
+// import.meta 不能直接写在 <template> 表达式里（Vite 无法解析），改用普通常量
+const isDev = import.meta.dev
+
 const open = ref(false)
 const logs = ref<LogEntry[]>([])
 const route = useRoute()
@@ -34,7 +37,7 @@ function copyAll() {
 
 <template>
   <ClientOnly>
-    <div v-if="import.meta.dev" class="fixed bottom-4 right-4 z-[9999] font-mono">
+    <div v-if="isDev" class="fixed bottom-4 right-4 z-[9999] font-mono">
       <button
         class="relative flex h-11 w-11 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg hover:bg-gray-700"
         title="调试面板"

@@ -1,7 +1,8 @@
 /**
  * 统一日志系统。全项目禁止裸用 console.log，一律通过 useLogger('模块名')。
  *
- * 特性：分级(debug/info/warn/error) · 结构化 · 内存环形缓冲(供调试面板/一键诊断) · 敏感字段脱敏
+ * 特性：分级(debug/info/warn/error) · 结构化 · 内存环形缓冲(供调试面板/一键诊断)
+ *      · 敏感字段脱敏 · 落本地磁盘(logs/app-<date>.log)
  */
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
@@ -33,6 +34,55 @@ function sanitize(ctx?: Record<string, unknown>): Record<string, unknown> | unde
   return out
 }
 
+// ---------------------------------------------------------------------------
+// 落本地磁盘：服务端直接写 logs/app-<date>.log；客户端批量回传到 /api/__log 落盘。
+// 失败一律静默，绝不影响主流程。
+// ---------------------------------------------------------------------------
+async function persistOnServer(entry: LogEntry): Promise<void> {
+  try {
+    const { appendFile, mkdir } = await import('node:fs/promises')
+    const { join } = await import('node:path')
+    const dir = join(process.cwd(), 'logs')
+    await mkdir(dir, { recursive: true })
+    await appendFile(join(dir, `app-${entry.time.slice(0, 10)}.log`), JSON.stringify(entry) + '\n', 'utf8')
+  } catch {
+    // 落盘失败不影响主流程
+  }
+}
+
+let clientQueue: LogEntry[] = []
+let flushTimer: ReturnType<typeof setTimeout> | undefined
+let exitBound = false
+
+function flushClientQueue(): void {
+  flushTimer = undefined
+  if (!clientQueue.length) return
+  const payload = JSON.stringify(clientQueue)
+  clientQueue = []
+  try {
+    if (navigator.sendBeacon?.('/api/__log', new Blob([payload], { type: 'application/json' }))) return
+  } catch {
+    // 退回 fetch
+  }
+  fetch('/api/__log', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: payload,
+    keepalive: true,
+  }).catch(() => {})
+}
+
+function queueForDisk(entry: LogEntry): void {
+  if (!exitBound && typeof window !== 'undefined') {
+    exitBound = true
+    window.addEventListener('pagehide', flushClientQueue)
+    window.addEventListener('beforeunload', flushClientQueue)
+  }
+  clientQueue.push(entry)
+  if (clientQueue.length >= 20) flushClientQueue()
+  else if (!flushTimer) flushTimer = setTimeout(flushClientQueue, 2000)
+}
+
 export function useLogger(module: string) {
   const minLevel: LogLevel = import.meta.dev ? 'debug' : 'info'
 
@@ -56,10 +106,14 @@ export function useLogger(module: string) {
       const method = level === 'debug' ? 'log' : level
       // eslint-disable-next-line no-console
       console[method](`%c${level.toUpperCase()}%c ${module} · ${message}`, style, 'color:inherit', context ?? '')
+      // 回传服务端落本地磁盘（批量、best-effort）
+      queueForDisk(entry)
     } else {
       // 服务端输出结构化 JSON，便于检索
       // eslint-disable-next-line no-console
       console.log(JSON.stringify(entry))
+      // 直接落本地磁盘 logs/app-<date>.log
+      void persistOnServer(entry)
     }
   }
 

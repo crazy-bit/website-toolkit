@@ -5,7 +5,11 @@
  */
 import { test, expect } from '@playwright/test'
 import fg from 'fast-glob'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// ESM 项目下没有 __dirname，需由 import.meta.url 推导
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 function discoverRoutes(): string[] {
   const root = resolve(__dirname, '../..')

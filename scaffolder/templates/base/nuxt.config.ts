@@ -5,16 +5,14 @@ export default defineNuxtConfig({
   // 调试能力：开发工具默认开启
   devtools: { enabled: true },
 
+  // 关闭 Nuxt 匿名遥测，避免安装/首次运行时出现"是否参与"的交互询问
+  telemetry: false,
+
   modules: [
     '@nuxt/ui',
   ],
 
   css: ['~/assets/css/main.css'],
-
-  ui: {
-    // 图标统一走 Iconify（Lucide + MDI）
-    icons: ['lucide', 'mdi'],
-  },
 
   app: {
     head: {

@@ -6,7 +6,7 @@
  *       npm run new:page blog/index   → pages/blog/index.vue (/blog)
  */
 import { writeFileSync, mkdirSync, existsSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 
 const raw = process.argv[2]
 if (!raw) {
@@ -31,14 +31,19 @@ if (existsSync(filePath)) {
 const route = '/' + name.replace(/index$/, '').replace(/\/$/, '')
 const title = (name.split('/').pop() || 'page').replace(/-/g, ' ')
 
-const tpl = `<script setup lang="ts">
-// 路由：${route || '/'}
-const log = useLogger('page:${name}')
+// standard 级别以上才有 useLogger，没有时不生成日志相关代码（避免死引用）
+const hasLogger = existsSync(resolve(process.cwd(), 'composables', 'useLogger.ts'))
+
+const loggerBlock = `const log = useLogger('page:${name}')
 
 onMounted(() => {
   log.info('页面已加载')
 })
-</script>
+`
+
+const tpl = `<script setup lang="ts">
+// 路由：${route || '/'}
+${hasLogger ? loggerBlock : ''}</script>
 
 <template>
   <div>
@@ -48,16 +53,8 @@ onMounted(() => {
 </template>
 `
 
-// standard 级别以下没有 useLogger，做个降级
-const tplNoLogger = tpl.replace(
-  /const log = useLogger\('page:[^']+'\)\n\nonMounted\(\(\) => \{\n  log\.info\('页面已加载'\)\n\}\)\n/,
-  '',
-)
-
-const hasLogger = existsSync(resolve(process.cwd(), 'composables', 'useLogger.ts'))
-
 mkdirSync(dirname(filePath), { recursive: true })
-writeFileSync(filePath, hasLogger ? tpl : tplNoLogger, 'utf8')
+writeFileSync(filePath, tpl, 'utf8')
 
 console.log(`✓ 已创建 pages/${name}.vue  →  访问 ${route || '/'}`)
 console.log('  路由冒烟测试会自动覆盖该页面（full 级别）。')

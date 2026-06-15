@@ -11,16 +11,27 @@ AI 建站工具脚手架初始化器
 
 用法：
     python init_site.py <目标目录> [--level minimal|standard|full] [--name 项目名] [--force]
+                        [--agent codebuddy|claude-code|claude-internal|workbuddy|other]
+                        [--entry 入口文件] [--ai-dir AI目录]
 
 示例：
     python init_site.py ./my-site
     python init_site.py ./my-site --level full --name my-cool-site
     python init_site.py . --level standard --force
+    python init_site.py ./my-site --agent claude-code
+    python init_site.py ./my-site --agent other --entry MYTOOL.md --ai-dir .mytool
 
 分级（累加）：
     minimal   仅统一架构 + AGENTS 规则
     standard  + 日志系统 + 调试能力（推荐，默认）
     full      + Vitest 单测 + Playwright E2E + 路由冒烟
+
+Agent（决定默认加载的入口文件与 AI(skill/rule) 存放目录）：
+    codebuddy           CODEBUDDY.md  + .codebuddy/   （默认）
+    claude-code         CLAUDE.md     + .claude/
+    claude-internal     CLAUDE.md     + .claude/
+    workbuddy           CODEBUDDY.md  + .codebuddy/
+    other               由 --entry / --ai-dir 自定义
 """
 from __future__ import annotations
 
@@ -51,6 +62,16 @@ LEVEL_LAYERS = {
     "full": ["base", "standard", "full"],
 }
 
+# Agent 工具预设：决定「默认加载的入口文件」与「AI(skill/rule)存放目录」
+# other 表示自定义，需由 --entry / --ai-dir 指定
+AGENT_PRESETS = {
+    "codebuddy":       {"entry": "CODEBUDDY.md", "ai_dir": ".codebuddy", "label": "CodeBuddy"},
+    "claude-code":     {"entry": "CLAUDE.md",    "ai_dir": ".claude",    "label": "Claude Code"},
+    "claude-internal": {"entry": "CLAUDE.md",    "ai_dir": ".claude",    "label": "Claude"},
+    "workbuddy":       {"entry": "CODEBUDDY.md", "ai_dir": ".codebuddy", "label": "WorkBuddy"},
+}
+AGENT_CHOICES = list(AGENT_PRESETS.keys()) + ["other"]
+
 # 文本文件后缀（做 token 替换），其余按二进制原样拷贝
 TEXT_SUFFIXES = {
     ".ts", ".js", ".mjs", ".cjs", ".vue", ".json", ".css", ".md",
@@ -73,6 +94,7 @@ BASE_DEPS = {
 BASE_DEV_DEPS = {
     "@iconify/vue": "^4.3.0",
     "@nuxtjs/color-mode": "^3.5.2",
+    "@types/node": "^22.10.0",
     "typescript": "^5.7.0",
     "vue-tsc": "^2.2.0",
 }
@@ -156,13 +178,60 @@ def build_package_json(name: str, level: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Agent 入口文件 / AI 目录
+# ---------------------------------------------------------------------------
+def resolve_agent(agent: str, entry: str | None, ai_dir: str | None) -> tuple[str, str, str]:
+    """返回 (入口文件名, AI 目录名, 展示标签)。"""
+    if agent in AGENT_PRESETS:
+        p = AGENT_PRESETS[agent]
+        return entry or p["entry"], ai_dir or p["ai_dir"], p["label"]
+    # other：必须显式指定入口文件与 AI 目录
+    if not entry or not ai_dir:
+        err("agent=other 时必须同时提供 --entry 与 --ai-dir")
+        err("例如：--agent other --entry MYTOOL.md --ai-dir .mytool")
+        sys.exit(1)
+    label = Path(entry).stem or "AI"
+    return entry, ai_dir, label
+
+
+def build_entry_file(label: str) -> str:
+    return (
+        f"# {label} / AI 助手入口规则\n\n"
+        f"> 本文件是 {label} 默认加载的项目规则入口。\n"
+        "> 完整 AI 协作规范见根目录 `AGENTS.md`，请严格遵守其中的技术栈、目录约定、\n"
+        "> 命名规范、日志规范、测试工作流等全部要求。\n\n"
+        "简述：Nuxt 3 + Nuxt UI 3 + Tailwind + GSAP + Lenis + Iconify + TypeScript。\n"
+        "新页面放 pages/；逻辑放 composables/；请求走 useApi.ts；日志用 useLogger；\n"
+        "禁止裸 console.log / 组件内直接 fetch / 新增同类库。改完跑 npm run check。\n"
+    )
+
+
+def build_ai_dir_rule(label: str) -> str:
+    return (
+        "# 项目规则（rule）\n\n"
+        f"本目录用于存放 {label} 的技能（skill）与规则（rule）。\n"
+        "项目的完整 AI 协作规范见根目录 `AGENTS.md`，新增规则 / 技能请放在本目录下，\n"
+        "并保持与 `AGENTS.md` 一致，不要与其冲突。\n"
+    )
+
+
+def write_agent_files(target: Path, entry: str, ai_dir: str, label: str) -> int:
+    """生成 agent 入口文件与 AI 目录下的规则文件，返回写入文件数。"""
+    (target / entry).write_text(build_entry_file(label), encoding="utf-8")
+    rules_dir = target / ai_dir / "rules"
+    rules_dir.mkdir(parents=True, exist_ok=True)
+    (rules_dir / "project.md").write_text(build_ai_dir_rule(label), encoding="utf-8")
+    return 2
+
+
+# ---------------------------------------------------------------------------
 # 模板拷贝
 # ---------------------------------------------------------------------------
 def is_text_file(path: Path) -> bool:
     if path.suffix.lower() in TEXT_SUFFIXES:
         return True
-    # 处理 .gitignore / .cursorrules 等无标准后缀的点文件
-    return path.name in {".gitignore", ".cursorrules", ".env", "AGENTS.md"}
+    # 处理 .gitignore / .env 等无标准后缀的点文件
+    return path.name in {".gitignore", ".env", "AGENTS.md"}
 
 
 def copy_layer(layer: str, target: Path, name: str, force: bool) -> int:
@@ -192,7 +261,6 @@ def copy_layer(layer: str, target: Path, name: str, force: bool) -> int:
 def _unmask(part: str) -> str:
     mapping = {
         "_gitignore": ".gitignore",
-        "_cursorrules": ".cursorrules",
         "_env": ".env",
     }
     return mapping.get(part, part)
@@ -201,10 +269,13 @@ def _unmask(part: str) -> str:
 # ---------------------------------------------------------------------------
 # 主流程
 # ---------------------------------------------------------------------------
-def init(target: Path, level: str, name: str, force: bool) -> None:
+def init(target: Path, level: str, name: str, force: bool,
+         agent: str, entry: str | None, ai_dir: str | None) -> None:
     if not TEMPLATES_DIR.is_dir():
         err(f"找不到模板目录：{TEMPLATES_DIR}")
         sys.exit(1)
+
+    entry_file, ai_dir_name, label = resolve_agent(agent, entry, ai_dir)
 
     if target.exists():
         non_empty = any(target.iterdir())
@@ -217,6 +288,7 @@ def init(target: Path, level: str, name: str, force: bool) -> None:
     info(f"初始化项目：{_c('1', name)}")
     info(f"目标目录：{target.resolve()}")
     info(f"级别：{_c('1', level)}（{ '+'.join(LEVEL_LAYERS[level]) }）")
+    info(f"Agent：{_c('1', label)}（入口 {entry_file} / AI 目录 {ai_dir_name}）")
     print()
 
     total = 0
@@ -224,6 +296,10 @@ def init(target: Path, level: str, name: str, force: bool) -> None:
         n = copy_layer(layer, target, name, force)
         total += n
         ok(f"应用模板层 {_c('1', layer)}：{n} 个文件")
+
+    # agent 入口文件 + AI 目录
+    total += write_agent_files(target, entry_file, ai_dir_name, label)
+    ok(f"生成 agent 入口 {_c('1', entry_file)} 与 AI 目录 {_c('1', ai_dir_name + '/')}")
 
     # package.json 动态生成
     (target / "package.json").write_text(
@@ -233,10 +309,10 @@ def init(target: Path, level: str, name: str, force: bool) -> None:
 
     print()
     ok(f"完成！共写入 {total + 1} 个文件")
-    print_next_steps(target, level)
+    print_next_steps(target, level, entry_file)
 
 
-def print_next_steps(target: Path, level: str) -> None:
+def print_next_steps(target: Path, level: str, entry_file: str) -> None:
     print()
     print(_c("1", "下一步："))
     try:
@@ -251,7 +327,7 @@ def print_next_steps(target: Path, level: str) -> None:
     print("  npm run dev              # 启动开发服务器")
     print()
     print(_c("1", "之后用 AI 开发时："))
-    print("  · 项目根目录的 AGENTS.md / .cursorrules 会让 AI 自动遵循规范")
+    print(f"  · 根目录 {entry_file} / AGENTS.md 会让 AI 自动遵循规范")
     print("  · 新建页面：npm run new:page <名字>")
     print("  · 改完检查：npm run check")
     if level in ("standard", "full"):
@@ -282,13 +358,30 @@ def main(argv: list[str] | None = None) -> None:
         action="store_true",
         help="目标目录非空时仍继续，并覆盖同名文件",
     )
+    parser.add_argument(
+        "--agent", "-a",
+        choices=AGENT_CHOICES,
+        default="codebuddy",
+        help="使用的 AI agent 工具（决定入口文件与 AI 目录，默认 codebuddy）",
+    )
+    parser.add_argument(
+        "--entry",
+        default=None,
+        help="默认加载的入口文件名（agent=other 时必填，可覆盖预设）",
+    )
+    parser.add_argument(
+        "--ai-dir",
+        dest="ai_dir",
+        default=None,
+        help="AI(skill/rule) 存放目录（agent=other 时必填，可覆盖预设）",
+    )
     args = parser.parse_args(argv)
 
     target = Path(args.target)
     name = args.name or target.resolve().name
     name = _normalize_name(name)
 
-    init(target, args.level, name, args.force)
+    init(target, args.level, name, args.force, args.agent, args.entry, args.ai_dir)
 
 
 def _normalize_name(name: str) -> str:

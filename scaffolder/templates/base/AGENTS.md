@@ -65,6 +65,10 @@
 - 关键流程用 `log.info`，可恢复异常用 `log.warn`，失败用 `log.error`
 - `error` 级别必须带上下文：`log.error('xxx 失败', { error: String(e) })`
 - 不要在日志里打印密码 / token / 手机号等敏感信息
+- **日志必须落本地磁盘**：所有日志统一经 `useLogger` 自动写入 `logs/app-<日期>.log`
+  （服务端直接落盘；客户端经内部接口 `/api/__log` 回传落盘）。
+  - 不要绕过 `useLogger` 自行写文件；新增服务端日志可调用 `server/utils/fileLogger.ts` 的 `appendLogToDisk`。
+  - `logs/` 已在 `.gitignore` 中忽略，不要提交日志文件。
 
 ## 六、错误与调试规范
 

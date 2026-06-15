@@ -23,7 +23,13 @@
 
 ### 方式 A：Windows 一键（最省事）
 
-双击运行 [`scaffolder/init.bat`](./scaffolder/init.bat)，按提示输入**项目名**并选择**级别**（回车默认 standard），随后可**一并自动安装依赖并启动开发服务器**（自动选用 Node，无则回退 Python）。项目会生成在该脚本所在的当前目录下。
+双击运行 [`scaffolder/init.bat`](./scaffolder/init.bat)。项目会生成在该脚本所在的当前目录下。
+![alt text](docs/images/init-bat.png)
+
+执行后，会在当前目录下生成一个名为 `xxx` 的项目。
+![alt text](docs/images/web-dir.png)
+
+用Agent工具(如CodeBuddy)来打开`xxx`目录即可。
 
 ### 方式 B：Node 版（推荐，只需 Node）
 
