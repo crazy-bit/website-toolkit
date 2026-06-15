@@ -21,7 +21,11 @@
 
 脚手架工具在 [`scaffolder/`](./scaffolder)，提供两套**功能完全等价**的 CLI，任选其一。
 
-### 方式 A：Node 版（推荐，只需 Node）
+### 方式 A：Windows 一键（最省事）
+
+双击运行 [`scaffolder/init-standard.bat`](./scaffolder/init-standard.bat)，按提示输入项目名即可（固定 `standard` 级别，自动选用 Node，无则回退 Python）。项目会生成在该脚本所在的当前目录下。
+
+### 方式 B：Node 版（推荐，只需 Node）
 
 ```bash
 # 交互式（询问目录与级别）
@@ -34,7 +38,7 @@ npx create-ai-web my-site --level full --name my-site
 node scaffolder/create.mjs my-site --level full
 ```
 
-### 方式 B：Python 版
+### 方式 C：Python 版
 
 ```bash
 python scaffolder/init_site.py my-site --level standard --name my-site
