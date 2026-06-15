@@ -15,8 +15,7 @@
 
 ## 用法 A：Windows 一键脚本
 
-双击 `init.bat`，按提示输入项目名并选择级别（`minimal`/`standard`/`full`，回车默认 standard），即在脚本所在目录生成对应项目。
-脚本会优先调用 Node 版 CLI，未安装 Node 时自动回退到 Python 版。
+双击 `init.bat`，按提示输入项目名并选择级别（`minimal`/`standard`/`full`，回车默认 standard），即在脚本所在目录生成对应项目；生成后还可按提示**自动 `npm install` 并启动 `npm run dev`**，省去手动安装步骤。脚本会优先调用 Node 版 CLI，未安装 Node 时自动回退到 Python 版。
 
 ## 用法 B：Node 版（npx / npm create）
 
