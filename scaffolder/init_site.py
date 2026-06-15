@@ -59,7 +59,7 @@ TEXT_SUFFIXES = {
 
 NAME_TOKEN = "__PROJECT_NAME__"
 
-# 依赖版本（与参考实现 maoxianjia 对齐）
+# 依赖版本（采用经过验证的稳定组合）
 BASE_DEPS = {
     "@iconify-json/lucide": "^1.2.30",
     "@iconify-json/mdi": "^1.2.2",

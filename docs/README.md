@@ -16,7 +16,7 @@
 | [02 · 日志系统设计](./02-日志系统设计.md) | `useLogger`、全局错误捕获、请求日志、脱敏与导出 |
 | [03 · 测试体系设计](./03-测试体系设计.md) | Vitest 单测、Playwright E2E、**路由冒烟模板**、一键 check |
 | [04 · 调试能力设计](./04-调试能力设计.md) | 友好错误页、应用内调试面板、DevTools、`doctor` 体检 |
-| [05 · 反向校验报告（maoxianjia）](./05-反向校验报告（maoxianjia）.md) | 用真实项目检验方案，验证规范必要性并据此修正 |
+| [05 · 反向校验报告](./05-反向校验报告.md) | 用真实参考项目检验方案，验证规范必要性并据此修正 |
 
 ## 四大支柱与闭环
 
@@ -32,8 +32,8 @@
 
 ## 参考实现
 
-本仓库 `maoxianjia/` 已采用完整目标技术栈（Nuxt 3 + Nuxt UI + GSAP + Lenis + Iconify），
-可作为脚手架原型（P0）抽象来源。需补齐：`AGENTS.md`、`error.vue`、`useLogger`、`tests/`。
+方案抽象自一个已采用完整目标技术栈（Nuxt 3 + Nuxt UI + GSAP + Lenis + Iconify）的真实项目，
+该项目可作为脚手架原型（P0）来源。脚手架在其基础上补齐了：`AGENTS.md`、`error.vue`、`useLogger`、`tests/`。
 
 ## 给非程序人员的极简使用心智
 
