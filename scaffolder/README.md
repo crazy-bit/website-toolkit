@@ -9,13 +9,13 @@
 
 | CLI | 命令 | 适合 |
 |-----|------|------|
-| **Windows 一键** | 双击 `init-standard.bat` | 最省事，输入项目名即可（固定 standard 级别） |
+| **Windows 一键** | 双击 `init.bat` | 最省事，输入项目名并选择级别 |
 | **Node 版（推荐）** | `npx create-ai-web` | 只需 Node，无需 Python；可发布到 npm 直接 `npm create` |
 | Python 版 | `python init_site.py` | 已装 Python 的环境 |
 
 ## 用法 A：Windows 一键脚本
 
-双击 `init-standard.bat`，按提示输入项目名，即在脚本所在目录生成一个 `standard` 级别项目。
+双击 `init.bat`，按提示输入项目名并选择级别（`minimal`/`standard`/`full`，回车默认 standard），即在脚本所在目录生成对应项目。
 脚本会优先调用 Node 版 CLI，未安装 Node 时自动回退到 Python 版。
 
 ## 用法 B：Node 版（npx / npm create）
