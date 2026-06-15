@@ -83,6 +83,8 @@ FULL_DEV_DEPS = {
     "happy-dom": "^16.0.0",
     "@playwright/test": "^1.50.0",
     "fast-glob": "^3.3.3",
+    "eslint": "^9.0.0",
+    "@nuxt/eslint": "^1.0.0",
 }
 
 
@@ -132,10 +134,12 @@ def build_package_json(name: str, level: str) -> str:
     if level == "full":
         dev_deps.update(FULL_DEV_DEPS)
         scripts.update({
+            "lint": "eslint .",
+            "lint:fix": "eslint . --fix",
             "test:unit": "vitest run",
             "test:e2e": "playwright test",
             "test:smoke": "playwright test tests/e2e/smoke.routes.spec.ts",
-            "check": "nuxt typecheck && vitest run && playwright test tests/e2e/smoke.routes.spec.ts",
+            "check": "npm run lint && nuxt typecheck && vitest run && playwright test tests/e2e/smoke.routes.spec.ts",
         })
     else:
         scripts["check"] = "nuxt typecheck"

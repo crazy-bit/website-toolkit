@@ -1,0 +1,24 @@
+{
+  "name": "create-ai-web",
+  "version": "0.1.0",
+  "description": "面向非程序人员的 AI 建站脚手架：一条命令初始化符合统一架构/日志/测试/调试规范的 Nuxt 3 项目",
+  "type": "module",
+  "bin": {
+    "create-ai-web": "create.mjs"
+  },
+  "files": [
+    "create.mjs",
+    "templates"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "nuxt",
+    "scaffold",
+    "template",
+    "create",
+    "ai"
+  ],
+  "license": "MIT"
+}
